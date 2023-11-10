@@ -1,2 +1,2 @@
-# reentrant-idempotent-rabbitmq
-A Rabbit MQ structure that guarantees reentrance and idempotence.
+# Reentrant Idempotent RabbitMQ
+A RabbitMQ structure that guarantees reentrance and idempotence.

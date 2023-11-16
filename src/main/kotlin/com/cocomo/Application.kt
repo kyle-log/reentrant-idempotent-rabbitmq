@@ -1,9 +1,13 @@
 package com.cocomo
 
 import com.cocomo.library.amqp.rabbit.RabbitEventProcessor
-import com.cocomo.library.idempotent.IdempotentApplicationEventMulticaster
-import com.cocomo.library.idempotent.IdempotentChecker
-import com.cocomo.library.idempotent.StandardIdempotentChecker
+import com.cocomo.library.event.ApplicationEventProcessor
+import com.cocomo.library.event.CustomApplicationEventMulticaster
+import com.cocomo.library.event.StandardApplicationEventProcessor
+import com.cocomo.library.event.decoratedBy
+import com.cocomo.library.idempotent.IdempotentApplicationEventProcessor
+import com.cocomo.library.idempotent.IdempotentExecutor
+import com.cocomo.library.idempotent.StandardIdempotentExecutor
 import com.cocomo.worker.EventHandler
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -26,16 +30,22 @@ class Configuration {
 
     // You can change cacheManager to redis or something
     @Bean
-    fun idempotentChecker() = StandardIdempotentChecker(
+    fun idempotentChecker() = StandardIdempotentExecutor(
         cacheManager = ConcurrentMapCacheManager(),
     )
 
+    @Bean
+    fun applicationEventProcessor(
+        idempotentExecutor: IdempotentExecutor,
+    ) = StandardApplicationEventProcessor()
+        .decoratedBy { IdempotentApplicationEventProcessor(it, idempotentExecutor) }
+
     // Do not change bean name
     @Bean("applicationEventMulticaster")
-    fun idempotentApplicationEventMulticaster(
-        idempotenceChecker: IdempotentChecker,
-    ) = IdempotentApplicationEventMulticaster(
-        idempotenceChecker = idempotenceChecker,
+    fun customApplicationEventMulticaster(
+        applicationEventProcessor: ApplicationEventProcessor,
+    ) = CustomApplicationEventMulticaster(
+        applicationEventProcessor = applicationEventProcessor,
     )
 
     @Bean

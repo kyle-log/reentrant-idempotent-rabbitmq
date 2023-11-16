@@ -5,5 +5,5 @@ import java.util.*
 
 data class Event(
     val value: String,
-    override val uuid: String = UUID.randomUUID().toString(),
+    override val idempotentKey: String = UUID.randomUUID().toString()
 ) : IdempotentEvent

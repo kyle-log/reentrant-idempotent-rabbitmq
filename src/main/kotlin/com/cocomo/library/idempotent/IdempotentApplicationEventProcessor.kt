@@ -2,6 +2,7 @@ package com.cocomo.library.idempotent
 
 import com.cocomo.library.event.ApplicationEventProcessor
 import org.springframework.context.ApplicationEvent
+import org.springframework.context.ApplicationListener
 import org.springframework.context.PayloadApplicationEvent
 import org.springframework.context.event.GenericApplicationListener
 
@@ -10,7 +11,10 @@ class IdempotentApplicationEventProcessor(
     private val idempotenceChecker: IdempotentExecutor,
 ) : ApplicationEventProcessor {
 
-    override fun process(listener: GenericApplicationListener, event: ApplicationEvent) {
+    override fun process(listener: ApplicationListener<ApplicationEvent>, event: ApplicationEvent) {
+        if (listener !is GenericApplicationListener) {
+            return delegate.process(listener, event)
+        }
         if (event !is PayloadApplicationEvent<*>) {
             return delegate.process(listener, event)
         }

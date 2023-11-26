@@ -2,8 +2,8 @@ package com.cocomo.library.event
 
 import com.cocomo.library.idempotent.AlwaysThrowErrorHandler
 import org.springframework.context.ApplicationEvent
+import org.springframework.context.ApplicationListener
 import org.springframework.context.event.AbstractApplicationEventMulticaster
-import org.springframework.context.event.GenericApplicationListener
 import org.springframework.core.ResolvableType
 import org.springframework.util.ErrorHandler
 
@@ -16,12 +16,11 @@ class CustomApplicationEventMulticaster(
         multicastEvent(event)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun multicastEvent(event: ApplicationEvent, eventType: ResolvableType?) {
         val type = eventType ?: ResolvableType.forInstance(event)
-        for (listener in getApplicationListeners(event, type)) {
-            if (listener !is GenericApplicationListener) {
-                continue
-            }
+        for (aListener in getApplicationListeners(event, type)) {
+            val listener = aListener as ApplicationListener<ApplicationEvent>
             runCatching { applicationEventProcessor.process(listener, event) }
                 .getOrElse { errorHandler.handleError(it) }
         }
